@@ -3,27 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BinoDex AI — Live Chart</title>
+  <title>BinoDex AI — Trading Terminal</title>
   
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Tailwind CSS (для быстрой верстки) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    // Кастомная палитра BinoDex (мятно-зеленый акцент и темный фон)
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            binodex: {
+              bg: '#11141d',
+              card: '#181c26',
+              border: '#252a37',
+              accent: '#10b981',
+              accentHover: '#059669',
+              lightAccent: '#34d399',
+            }
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
     body {
-      background-color: #0b0e14;
+      background-color: #11141d;
       color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
     }
     .card {
-      background: #161b22;
-      border: 1px solid #21262d;
+      background: #181c26;
+      border: 1px solid #252a37;
     }
-    /* Задаем фиксированную высоту для контейнера графика */
     #tradingview_widget_container {
       height: 380px;
       width: 100%;
@@ -33,123 +52,127 @@
 <body class="p-3 flex flex-col justify-between min-h-screen">
 
   <div>
-    <!-- Шапка Mini App -->
+    <!-- Шапка Mini App с логотипом BinoDex -->
     <div class="flex justify-between items-center mb-3">
-      <h1 class="text-lg font-bold text-blue-500">BinoDex <span class="text-white">AI Chart</span></h1>
-      <span class="bg-green-500/20 text-green-400 text-xs px-2.5 py-1 rounded-full border border-green-500/30">
-        ● LIVE
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-6 bg-emerald-400 rounded-full transform -rotate-45 shadow-[0_0_10px_#10b981]"></div>
+        <h1 class="text-xl font-black tracking-wide text-white">Bino<span class="text-emerald-400">Dex</span></h1>
+      </div>
+      <span class="bg-emerald-500/10 text-emerald-400 text-xs px-3 py-1 rounded-full border border-emerald-500/20 font-semibold">
+        ● AI SIGNAL
       </span>
     </div>
 
-    <!-- Выбор торговой пары -->
+    <!-- Выбор валютных пар OTC -->
     <div class="mb-3">
-      <label class="block text-xs text-gray-400 mb-1 font-semibold">ВЫБОР АКТИВА</label>
-      <select id="asset-select" onchange="changeAsset()" class="w-full card p-2.5 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
-        <option value="BINANCE:BTCUSDT">BTC / USDT (Bitcoin)</option>
-        <option value="BINANCE:ETHUSDT">ETH / USDT (Ethereum)</option>
-        <option value="FX:EURUSD">EUR / USD (Forex)</option>
-        <option value="FX:GBPUSD">GBP / USD (Forex)</option>
-        <option value="TVC:GOLD">GOLD (Золото)</option>
+      <label class="block text-xs text-gray-400 mb-1 font-semibold uppercase tracking-wider">Валютная пара (OTC)</label>
+      <select id="asset-select" onchange="changeAsset()" class="w-full card p-3 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-emerald-500 transition-all">
+        <option value="FX:EURUSD">EUR/USD OTC</option>
+        <option value="FX:GBPUSD">GBP/USD OTC</option>
+        <option value="FX:USDCHF">USD/CHF OTC</option>
+        <option value="FX:USDJPY">USD/JPY OTC</option>
+        <option value="FX:USDCAD">USD/CAD OTC</option>
+        <option value="FX:AUDUSD">AUD/USD OTC</option>
+        <option value="FX:NZDUSD">NZD/USD OTC</option>
       </select>
     </div>
 
-    <!-- Контейнер интерактивного графика TradingView -->
-    <div class="card rounded-xl overflow-hidden mb-3">
+    <!-- График TradingView -->
+    <div class="card rounded-2xl overflow-hidden mb-3 shadow-xl">
       <div id="tradingview_widget_container"></div>
     </div>
 
-    <!-- Панель управления экспирацией -->
+    <!-- Время сделки (Экспирация) -->
     <div class="mb-4">
-      <label class="block text-xs text-gray-400 mb-1.5 font-semibold">ВРЕМЯ ЭКСПИРАЦИИ</label>
+      <label class="block text-xs text-gray-400 mb-1.5 font-semibold uppercase tracking-wider">Время сделки</label>
       <div class="grid grid-cols-4 gap-2">
-        <button onclick="setTime('1M', this)" class="tf-btn card p-2 rounded-lg text-center text-xs font-bold border-blue-500 bg-blue-600/20">1M</button>
-        <button onclick="setTime('2M', this)" class="tf-btn card p-2 rounded-lg text-center text-xs font-bold">2M</button>
-        <button onclick="setTime('3M', this)" class="tf-btn card p-2 rounded-lg text-center text-xs font-bold">3M</button>
-        <button onclick="setTime('5M', this)" class="tf-btn card p-2 rounded-lg text-center text-xs font-bold">5M</button>
+        <button onclick="setTime('1M', this)" class="tf-btn card p-2.5 rounded-xl text-center text-xs font-bold border-emerald-500 bg-emerald-500/15 text-emerald-400">1M</button>
+        <button onclick="setTime('2M', this)" class="tf-btn card p-2.5 rounded-xl text-center text-xs font-bold text-gray-300">2M</button>
+        <button onclick="setTime('3M', this)" class="tf-btn card p-2.5 rounded-xl text-center text-xs font-bold text-gray-300">3M</button>
+        <button onclick="setTime('5M', this)" class="tf-btn card p-2.5 rounded-xl text-center text-xs font-bold text-gray-300">5M</button>
       </div>
     </div>
 
-    <!-- Кнопка получения AI сигнала -->
-    <button onclick="getSignal()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl shadow-lg transition-all active:scale-95">
-      📊 ПОЛУЧИТЬ AI СИГНАЛ
+    <!-- Кнопка генерации AI сигнала в цвете BinoDex -->
+    <button onclick="getSignal()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-sm rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 uppercase tracking-wider">
+      ⚡ Получить AI Сигнал
     </button>
 
-    <!-- Карточка результатов сигнала -->
-    <div id="signal-result" class="hidden card mt-4 p-4 rounded-xl text-center">
-      <div class="text-xs text-gray-400 mb-1" id="signal-info">BTC/USDT • 1M</div>
-      <div id="signal-direction" class="text-2xl font-extrabold my-1 text-emerald-400">
+    <!-- Вывод результатов сигнала -->
+    <div id="signal-result" class="hidden card mt-4 p-4 rounded-2xl text-center shadow-lg border-emerald-500/30">
+      <div class="text-xs text-gray-400 mb-1 font-semibold uppercase" id="signal-info">EUR/USD OTC • 1M</div>
+      
+      <div id="signal-direction" class="text-2xl font-black my-1 text-emerald-400">
         ▲ CALL (ВВЕРХ)
       </div>
-      <div class="w-full bg-gray-800 rounded-full h-2 my-2">
-        <div id="signal-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 89%"></div>
+
+      <div class="w-full bg-slate-800 rounded-full h-2 my-3 overflow-hidden">
+        <div id="signal-bar" class="bg-emerald-400 h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_#34d399]" style="width: 88%"></div>
       </div>
-      <div class="flex justify-between text-xs text-gray-400 mt-2">
-        <span>Точность: <b id="signal-accuracy" class="text-white">89%</b></span>
-        <span>Индикаторы: <b class="text-white">RSI + MACD</b></span>
+      
+      <div class="flex justify-between text-xs text-gray-400 mt-2 font-medium">
+        <span>Прогноз AI: <b id="signal-accuracy" class="text-white">88%</b></span>
+        <span>Индикатор: <b class="text-white">RSI + Volume</b></span>
       </div>
     </div>
   </div>
 
-  <!-- Подключение скрипта TradingView Widget -->
+  <!-- Подключение виджета TradingView -->
   <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
   
   <script type="text/javascript">
-    // Инициализация Telegram WebApp API
     const tg = window.Telegram.WebApp;
-    tg.expand(); // Разворачиваем окно Telegram Mini App на весь экран
+    tg.expand();
 
-    let currentSymbol = "BINANCE:BTCUSDT";
+    let currentSymbol = "FX:EURUSD";
     let selectedTimeframe = "1M";
 
-    // Функция инициализации / перерисовки виджета TradingView
     function loadTradingViewChart(symbol) {
-      document.getElementById('tradingview_widget_container').innerHTML = ''; // Очищаем контейнер
+      document.getElementById('tradingview_widget_container').innerHTML = '';
 
       new TradingView.widget({
         "autosize": true,
         "symbol": symbol,
-        "interval": "1", // Таймфрейм свечей (1 = 1 минута)
+        "interval": "1",
         "timezone": "Etc/UTC",
-        "theme": "dark", // Темная тема для совпадения со стилем приложения
-        "style": "1", // 1 = Свечной график (Candlesticks)
+        "theme": "dark",
+        "style": "1",
         "locale": "ru",
-        "toolbar_bg": "#161b22",
+        "toolbar_bg": "#181c26",
         "enable_publishing": false,
-        "hide_top_toolbar": false, // Показать/скрыть верхнюю панель инструментов
-        "hide_side_toolbar": true, // Скрыть боковую панель рисовалок для экономии места
+        "hide_top_toolbar": false,
+        "hide_side_toolbar": true,
         "allow_symbol_change": false,
         "container_id": "tradingview_widget_container"
       });
     }
 
-    // Инициализируем график при загрузке страницы
     window.onload = function() {
       loadTradingViewChart(currentSymbol);
     };
 
-    // Смена валютной пары из выпадающего списка
     function changeAsset() {
       const select = document.getElementById('asset-select');
       currentSymbol = select.value;
       loadTradingViewChart(currentSymbol);
     }
 
-    // Выбор времени сделки
     function setTime(tf, element) {
       selectedTimeframe = tf;
       document.querySelectorAll('.tf-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600/20', 'border-blue-500');
+        btn.classList.remove('bg-emerald-500/15', 'border-emerald-500', 'text-emerald-400');
+        btn.classList.add('text-gray-300');
       });
-      element.classList.add('bg-blue-600/20', 'border-blue-500');
+      element.classList.add('bg-emerald-500/15', 'border-emerald-500', 'text-emerald-400');
+      element.classList.remove('text-gray-300');
     }
 
-    // Генерация сигнала
     function getSignal() {
       const select = document.getElementById('asset-select');
-      const assetName = select.options[select.selectedIndex].text.split(' ')[0];
+      const assetName = select.options[select.selectedIndex].text;
       
       const isCall = Math.random() > 0.5;
-      const accuracy = Math.floor(Math.random() * 11) + 85; // % точности от 85% до 95%
+      const accuracy = Math.floor(Math.random() * 11) + 85;
 
       const dirEl = document.getElementById('signal-direction');
       const barEl = document.getElementById('signal-bar');
@@ -158,19 +181,18 @@
       
       if (isCall) {
         dirEl.innerText = "▲ CALL (ВВЕРХ)";
-        dirEl.className = "text-2xl font-extrabold my-1 text-emerald-400";
-        barEl.className = "bg-emerald-500 h-2 rounded-full transition-all duration-500";
+        dirEl.className = "text-2xl font-black my-1 text-emerald-400";
+        barEl.className = "bg-emerald-400 h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_#34d399]";
       } else {
         dirEl.innerText = "▼ PUT (ВНИЗ)";
-        dirEl.className = "text-2xl font-extrabold my-1 text-rose-500";
-        barEl.className = "bg-rose-500 h-2 rounded-full transition-all duration-500";
+        dirEl.className = "text-2xl font-black my-1 text-rose-500";
+        barEl.className = "bg-rose-500 h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_#f43f5e]";
       }
 
       barEl.style.width = `${accuracy}%`;
       document.getElementById('signal-accuracy').innerText = `${accuracy}%`;
       document.getElementById('signal-result').classList.remove('hidden');
 
-      // Вызов виброотклика смартфона через Telegram SDK
       if (tg.HapticFeedback) {
         tg.HapticFeedback.notificationOccurred('success');
       }
